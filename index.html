@@ -1,182 +1,245 @@
-import React from 'react';
-import { ChevronsRight, ChevronsLeft, MoreVertical, Flag, Globe, Link as LinkIcon, ArrowRight } from 'lucide-react';
-
-// Komponen untuk melukis "Syiling Emas" (Gold Coin)
-const GoldCoin = ({ className, size = "w-16 h-16" }) => (
-  <div className={`absolute rounded-full bg-gradient-to-br from-yellow-200 via-yellow-500 to-yellow-700 border-2 border-yellow-300 shadow-[0_0_20px_rgba(234,179,8,0.5)] flex items-center justify-center ${size} ${className} z-0`}>
-    <div className="w-[75%] h-[75%] rounded-full border border-yellow-200/50 flex items-center justify-center bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-inner">
-      <span className="text-yellow-100 font-bold opacity-80" style={{ fontSize: 'inherit' }}>$</span>
-    </div>
-  </div>
-);
-
-export default function App() {
-  return (
-    <div className="min-h-screen bg-[#0f0518] text-white relative overflow-hidden flex justify-center selection:bg-fuchsia-500 selection:text-white" style={{ fontFamily: "'Poppins', sans-serif" }}>
-      
-      <style>
-        {`@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,600;0,700;0,800;0,900&display=swap');
-          @keyframes drawLine {
-            to { stroke-dashoffset: 0; }
-          }
-          @keyframes popNumber {
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VRS EA - COPYTRADE</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0f0518;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+        ::selection { background-color: #d946ef; color: white; }
+        
+        /* Animasi Khas */
+        @keyframes drawLine { to { stroke-dashoffset: 0; } }
+        @keyframes popNumber {
             0% { transform: scale(0) rotate(-20deg); opacity: 0; }
             70% { transform: scale(1.2) rotate(15deg); opacity: 1; }
             100% { transform: scale(1) rotate(10deg); opacity: 1; }
-          }
-        `}
-      </style>
+        }
+        @keyframes coinRain {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(150vh) rotate(720deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="min-h-screen relative overflow-hidden flex justify-center">
 
-      {/* --- BACKGROUND EFFECTS --- */}
-      {/* Kesan Nebula / Galaxy */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-20%] w-[70vw] h-[70vw] rounded-full bg-fuchsia-800/30 blur-[100px] mix-blend-screen"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-purple-800/40 blur-[120px] mix-blend-screen"></div>
-        <div className="absolute top-[30%] left-[50%] -translate-x-1/2 w-[80vw] h-[50vw] rounded-full bg-pink-600/20 blur-[150px] mix-blend-screen"></div>
+    <!-- --- BACKGROUND EFFECTS --- -->
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <!-- Nebula -->
+        <div class="absolute top-[-10%] left-[-20%] w-[70vw] h-[70vw] rounded-full bg-fuchsia-800/30 blur-[100px] mix-blend-screen"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-purple-800/40 blur-[120px] mix-blend-screen"></div>
+        <div class="absolute top-[30%] left-[50%] -translate-x-1/2 w-[80vw] h-[50vw] rounded-full bg-pink-600/20 blur-[150px] mix-blend-screen"></div>
         
-        {/* Latar Belakang "Simbol Dolar" Abstrak / Frame */}
-        <div className="absolute top-[10%] left-[50%] -translate-x-1/2 w-[80%] max-w-[400px] h-[70%] border-[4px] border-fuchsia-500/20 rounded-3xl blur-[2px]"></div>
-        <div className="absolute top-[10%] left-[50%] -translate-x-1/2 w-[80%] max-w-[400px] h-[70%] border-[2px] border-fuchsia-400/40 rounded-3xl shadow-[0_0_50px_rgba(217,70,239,0.3)]"></div>
-      </div>
+        <!-- Frame -->
+        <div class="absolute top-[10%] left-[50%] -translate-x-1/2 w-[80%] max-w-[400px] h-[70%] border-[4px] border-fuchsia-500/20 rounded-3xl blur-[2px]"></div>
+        <div class="absolute top-[10%] left-[50%] -translate-x-1/2 w-[80%] max-w-[400px] h-[70%] border-[2px] border-fuchsia-400/40 rounded-3xl shadow-[0_0_50px_rgba(217,70,239,0.3)]"></div>
+        
+        <!-- Hujan Syiling Emas (Dijana melalui JavaScript di bawah) -->
+        <div id="rain-container"></div>
+    </div>
 
-      {/* --- MAIN CONTENT CONTAINER --- */}
-      <div className="relative z-10 w-full max-w-[480px] min-h-screen flex flex-col items-center pt-10 pb-16 px-6">
+    <!-- --- MAIN CONTENT CONTAINER --- -->
+    <div class="relative z-10 w-full max-w-[480px] min-h-screen flex flex-col items-center pt-10 pb-16 px-6">
         
-        {/* HEADLINES */}
-        <div className="text-center w-full flex flex-col items-center z-20 space-y-0 mt-2">
-          <h2 className="text-3xl sm:text-4xl font-[800] tracking-tight text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] uppercase">
-            Jom Join
-          </h2>
-          <h1 className="text-5xl sm:text-6xl font-[900] tracking-tight text-white uppercase leading-tight drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]"
-              style={{ textShadow: '0px 0px 20px rgba(255,255,255,0.5), 0px 4px 10px rgba(0,0,0,0.8)' }}>
-            COPYTRADE
-          </h1>
-          <h3 className="text-2xl sm:text-3xl font-[700] tracking-tight text-yellow-300 mt-2 drop-shadow-[0_2px_5px_rgba(0,0,0,1)] uppercase">
-            Hanya Modal
-          </h3>
-          <h2 className="text-5xl sm:text-6xl font-[900] tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-yellow-200 via-yellow-400 to-yellow-600 uppercase" style={{ filter: 'drop-shadow(0px 4px 10px rgba(0,0,0,0.8)) drop-shadow(0px 0px 20px rgba(234,179,8,0.5))' }}>
-            10usd Sahaja
-          </h2>
+        <!-- HEADLINES -->
+        <div class="text-center w-full flex flex-col items-center z-20 space-y-0 mt-2">
+            <h2 class="text-3xl sm:text-4xl font-[800] tracking-tight text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] uppercase">
+                Jom Join
+            </h2>
+            <h1 class="text-5xl sm:text-6xl font-[900] tracking-tight text-white uppercase leading-tight drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]"
+                style="text-shadow: 0px 0px 20px rgba(255,255,255,0.5), 0px 4px 10px rgba(0,0,0,0.8);">
+                COPYTRADE
+            </h1>
+            <h3 class="text-2xl sm:text-3xl font-[700] tracking-tight text-yellow-300 mt-2 drop-shadow-[0_2px_5px_rgba(0,0,0,1)] uppercase">
+                Hanya Modal
+            </h3>
+            <h2 class="text-5xl sm:text-6xl font-[900] tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-yellow-200 via-yellow-400 to-yellow-600 uppercase" 
+                style="filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.8)) drop-shadow(0px 0px 20px rgba(234,179,8,0.5));">
+                10usd Sahaja
+            </h2>
         </div>
 
-        {/* HERO IMAGE & COINS SECTION */}
-        <div className="relative w-full h-[420px] sm:h-[480px] mt-0 flex justify-center items-end">
-          {/* Background Big Coin */}
-          <div className="absolute top-[5%] left-[50%] -translate-x-1/2 w-56 h-56 rounded-full bg-gradient-to-br from-yellow-300 to-yellow-600 opacity-80 blur-[2px] shadow-[0_0_80px_rgba(234,179,8,0.4)] z-0">
-            <div className="w-full h-full flex items-center justify-center opacity-40 text-8xl font-black text-yellow-800">$</div>
-          </div>
-
-          {/* Floating Coins */}
-          <GoldCoin className="top-[15%] left-[2%] animate-bounce" style={{ animationDuration: '3s' }} size="w-14 h-14 text-2xl" />
-          <GoldCoin className="bottom-[30%] left-[0%] animate-pulse" style={{ animationDuration: '4s' }} size="w-16 h-16 text-3xl" />
-          <GoldCoin className="top-[25%] right-[2%] animate-bounce" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} size="w-12 h-12 text-xl" />
-          <GoldCoin className="bottom-[40%] right-[-5%] animate-pulse" style={{ animationDuration: '3.5s' }} size="w-14 h-14 text-2xl" />
-
-          {/* Character / Person (Menggunakan imej placeholder dengan gaya masking supaya nampak menyatu dengan background) */}
-          <div className="relative z-10 w-[95%] h-[105%] flex justify-center items-end">
-             {/* Gradient mask untuk memudarkan bahagian bawah gambar */}
-             <div className="absolute inset-0 bg-gradient-to-t from-[#0f0518] via-transparent to-transparent z-20"></div>
-             <img 
-               src="https://i.postimg.cc/G2b9k9kr/Black-Yellow-Modern-Promo-Platform-Trading-Instagram-Post-(1).png" 
-               alt="Trader Man" 
-               className="object-cover object-top w-full h-full rounded-t-3xl shadow-[0_-10px_40px_rgba(217,70,239,0.3)]"
-               style={{ maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)' }}
-             />
-          </div>
-        </div>
-
-        {/* PRODUCT BANNER */}
-        <div className="relative z-30 w-[110%] max-w-[500px] -mt-16 sm:-mt-20">
-          <div className="bg-gradient-to-r from-fuchsia-600 via-pink-500 to-purple-600 p-[3px] rounded-xl shadow-[0_0_40px_rgba(217,70,239,0.7)]">
-            <div className="bg-gradient-to-r from-[#0a0310] via-[#1a0b2e] to-[#0a0310] py-3 sm:py-4 px-6 rounded-xl text-center">
-              <h2 className="text-4xl sm:text-5xl font-[900] italic text-transparent bg-clip-text bg-gradient-to-r from-white via-fuchsia-100 to-pink-200 tracking-widest uppercase" style={{ filter: 'drop-shadow(0px 0px 15px rgba(236,72,153,0.8))' }}>
-                VRS EA
-              </h2>
+        <!-- HERO IMAGE & COINS SECTION -->
+        <div class="relative w-full h-[420px] sm:h-[480px] mt-0 flex justify-center items-end">
+            <!-- Background Big Coin -->
+            <div class="absolute top-[5%] left-[50%] -translate-x-1/2 w-56 h-56 rounded-full bg-gradient-to-br from-yellow-300 to-yellow-600 opacity-80 blur-[2px] shadow-[0_0_80px_rgba(234,179,8,0.4)] z-0">
+                <div class="w-full h-full flex items-center justify-center opacity-40 text-8xl font-black text-yellow-800">$</div>
             </div>
-          </div>
+
+            <!-- 4 Static Floating Coins -->
+            <div class="absolute top-[15%] left-[2%] animate-bounce w-14 h-14 rounded-full bg-gradient-to-br from-yellow-200 via-yellow-500 to-yellow-700 border-2 border-yellow-300 shadow-[0_0_20px_rgba(234,179,8,0.5)] flex items-center justify-center text-2xl z-0" style="animation-duration: 3s;">
+                <div class="w-[75%] h-[75%] rounded-full border border-yellow-200/50 flex items-center justify-center bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-inner">
+                    <span class="text-yellow-100 font-bold opacity-80" style="font-size: inherit;">$</span>
+                </div>
+            </div>
+            <div class="absolute bottom-[30%] left-[0%] animate-pulse w-16 h-16 rounded-full bg-gradient-to-br from-yellow-200 via-yellow-500 to-yellow-700 border-2 border-yellow-300 shadow-[0_0_20px_rgba(234,179,8,0.5)] flex items-center justify-center text-3xl z-0" style="animation-duration: 4s;">
+                <div class="w-[75%] h-[75%] rounded-full border border-yellow-200/50 flex items-center justify-center bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-inner">
+                    <span class="text-yellow-100 font-bold opacity-80" style="font-size: inherit;">$</span>
+                </div>
+            </div>
+            <div class="absolute top-[25%] right-[2%] animate-bounce w-12 h-12 rounded-full bg-gradient-to-br from-yellow-200 via-yellow-500 to-yellow-700 border-2 border-yellow-300 shadow-[0_0_20px_rgba(234,179,8,0.5)] flex items-center justify-center text-xl z-0" style="animation-duration: 2.5s; animation-delay: 0.5s;">
+                <div class="w-[75%] h-[75%] rounded-full border border-yellow-200/50 flex items-center justify-center bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-inner">
+                    <span class="text-yellow-100 font-bold opacity-80" style="font-size: inherit;">$</span>
+                </div>
+            </div>
+            <div class="absolute bottom-[40%] right-[-5%] animate-pulse w-14 h-14 rounded-full bg-gradient-to-br from-yellow-200 via-yellow-500 to-yellow-700 border-2 border-yellow-300 shadow-[0_0_20px_rgba(234,179,8,0.5)] flex items-center justify-center text-2xl z-0" style="animation-duration: 3.5s;">
+                <div class="w-[75%] h-[75%] rounded-full border border-yellow-200/50 flex items-center justify-center bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-inner">
+                    <span class="text-yellow-100 font-bold opacity-80" style="font-size: inherit;">$</span>
+                </div>
+            </div>
+
+            <!-- Character Image -->
+            <div class="relative z-10 w-[95%] h-[105%] flex justify-center items-end">
+                <div class="absolute inset-0 bg-gradient-to-t from-[#0f0518] via-transparent to-transparent z-20"></div>
+                <img 
+                    src="https://i.postimg.cc/G2b9k9kr/Black-Yellow-Modern-Promo-Platform-Trading-Instagram-Post-(1).png" 
+                    alt="Trader Man" 
+                    class="object-cover object-top w-full h-full rounded-t-3xl shadow-[0_-10px_40px_rgba(217,70,239,0.3)]"
+                    style="mask-image: linear-gradient(to bottom, black 60%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);"
+                >
+            </div>
         </div>
 
-        {/* SUBTITLE */}
-        <p className="text-center text-sm sm:text-base font-[600] text-gray-100 mt-5 max-w-[90%] uppercase tracking-wide bg-black/50 py-2.5 px-5 rounded-full border border-fuchsia-500/30 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
-          Robot trading emas yang berani tunjuk hasil live!
+        <!-- PRODUCT BANNER -->
+        <div class="relative z-30 w-[110%] max-w-[500px] -mt-16 sm:-mt-20">
+            <div class="bg-gradient-to-r from-fuchsia-600 via-pink-500 to-purple-600 p-[3px] rounded-xl shadow-[0_0_40px_rgba(217,70,239,0.7)]">
+                <div class="bg-gradient-to-r from-[#0a0310] via-[#1a0b2e] to-[#0a0310] py-3 sm:py-4 px-6 rounded-xl text-center">
+                    <h2 class="text-4xl sm:text-5xl font-[900] italic text-transparent bg-clip-text bg-gradient-to-r from-white via-fuchsia-100 to-pink-200 tracking-widest uppercase" style="filter: drop-shadow(0px 0px 15px rgba(236,72,153,0.8));">
+                        VRS EA
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUBTITLE -->
+        <p class="text-center text-sm sm:text-base font-[600] text-gray-100 mt-5 max-w-[90%] uppercase tracking-wide bg-black/50 py-2.5 px-5 rounded-full border border-fuchsia-500/30 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+            Robot trading emas yang berani tunjuk hasil live!
         </p>
 
-        {/* CTA BUTTON */}
-        <a 
-          href="https://t.me/+qCu5B_jduchhODI1" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="relative z-30 group w-full mt-8 block bg-gradient-to-r from-fuchsia-600 via-pink-500 to-purple-600 hover:from-fuchsia-500 hover:via-pink-400 hover:to-purple-500 p-[3px] rounded-xl shadow-[0_10px_40px_rgba(217,70,239,0.4)] transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_15px_50px_rgba(236,72,153,0.6)]"
-        >
-          <div className="bg-[#0f0518] group-hover:bg-[#150724] rounded-xl py-4 px-3 flex items-center justify-between transition-colors w-full h-full relative overflow-hidden">
-            {/* Butang Cahaya Dalaman (Inner Glow) */}
-            <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            
-            <ChevronsRight className="w-8 h-8 text-fuchsia-500 group-hover:text-pink-300 transition-colors relative z-10 animate-pulse" />
-            <span className="text-xl sm:text-2xl font-[900] uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-pink-100 relative z-10" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,1))' }}>
-              Join Rumah Biru Disini
-            </span>
-            <ChevronsLeft className="w-8 h-8 text-fuchsia-500 group-hover:text-pink-300 transition-colors relative z-10 animate-pulse" />
-          </div>
+        <!-- CTA BUTTON -->
+        <a href="https://t.me/+qCu5B_jduchhODI1" target="_blank" rel="noopener noreferrer" class="relative z-30 group w-full mt-8 block bg-gradient-to-r from-fuchsia-600 via-pink-500 to-purple-600 hover:from-fuchsia-500 hover:via-pink-400 hover:to-purple-500 p-[3px] rounded-xl shadow-[0_10px_40px_rgba(217,70,239,0.4)] transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_15px_50px_rgba(236,72,153,0.6)]">
+            <div class="bg-[#0f0518] hover:bg-[#150724] rounded-xl py-4 px-3 flex items-center justify-between transition-colors w-full h-full relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-r from-fuchsia-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                
+                <!-- ChevronRight Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8 text-fuchsia-500 group-hover:text-pink-300 transition-colors relative z-10 animate-pulse"><path d="m6 17 5-5-5-5"/><path d="m13 17 5-5-5-5"/></svg>
+                
+                <span class="text-xl sm:text-2xl font-[900] uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-pink-100 relative z-10" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,1));">
+                    Join Rumah Biru Disini
+                </span>
+                
+                <!-- ChevronLeft Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8 text-fuchsia-500 group-hover:text-pink-300 transition-colors relative z-10 animate-pulse"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg>
+            </div>
         </a>
 
-        {/* INSTRUCTIONS SECTION */}
-        <div className="w-full mt-10 relative z-20 flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8">
-          
-          {/* Langkah-langkah Text */}
-          <div className="text-left font-[800] text-xs sm:text-sm leading-snug space-y-0.5">
-            <p className="text-fuchsia-400 mb-1.5 drop-shadow-md uppercase font-[900]">Cara Join Rumah Biru:</p>
-            <p className="text-white drop-shadow-sm">1. Klik "3 DOT" diatas</p>
-            <p className="text-white drop-shadow-sm">2. Klik "OPEN IN BROWSER"</p>
-            <p className="text-white drop-shadow-sm">3. Klik "JOIN RUMAH BARU DISINI"</p>
-          </div>
+        <!-- INSTRUCTIONS SECTION -->
+        <div class="w-full mt-10 relative z-20 flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8">
+            
+            <!-- Langkah-langkah Text -->
+            <div class="text-left font-[800] text-xs sm:text-sm leading-snug space-y-0.5">
+                <p class="text-fuchsia-400 mb-1.5 drop-shadow-md uppercase font-[900]">Cara Join Rumah Biru:</p>
+                <p class="text-white drop-shadow-sm">1. Klik "3 DOT" diatas</p>
+                <p class="text-white drop-shadow-sm">2. Klik "OPEN IN BROWSER"</p>
+                <p class="text-white drop-shadow-sm">3. Klik "JOIN RUMAH BARU DISINI"</p>
+            </div>
 
-          {/* Mockup Menu UI (Dibuang overflow-hidden supaya nombor 1 boleh terkeluar dari kotak) */}
-          <div className="relative bg-white text-black w-56 rounded-md shadow-2xl text-xs font-[600]">
-            {/* Mock Header Menu */}
-            <div className="border-b border-gray-200 px-3 py-2 flex items-center justify-between bg-gray-50 rounded-t-md">
-              <span className="font-semibold text-[10px] text-gray-500">Telegram / Web</span>
-              <div className="relative mr-4">
-                <MoreVertical className="w-4 h-4 text-gray-600" />
-                {/* Animasi Bulat & Nombor 1 */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50">
-                  <svg className="w-12 h-12 text-red-600 drop-shadow-sm" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" style={{ strokeDasharray: '400', strokeDashoffset: '400', animation: 'drawLine 0.8s ease-out forwards 0.5s' }}>
-                    <path d="M50,10 C80,5 95,25 90,50 C85,80 60,95 30,85 C5,75 5,45 20,20 C30,5 55,0 70,10" />
-                  </svg>
-                  <span className="absolute right-[-12px] top-[-5px] text-red-600 font-[900] text-2xl drop-shadow-[0_2px_2px_rgba(255,255,255,0.8)]" style={{ opacity: 0, animation: 'popNumber 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 1.2s' }}>1</span>
+            <!-- Mockup Menu UI -->
+            <div class="relative bg-white text-black w-56 rounded-md shadow-2xl text-xs font-[600]">
+                <!-- Mock Header Menu -->
+                <div class="border-b border-gray-200 px-3 py-2 flex items-center justify-between bg-gray-50 rounded-t-md">
+                    <span class="font-semibold text-[10px] text-gray-500">Telegram / Web</span>
+                    <div class="relative mr-4">
+                        <!-- MoreVertical Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-gray-600"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                        
+                        <!-- Animasi Bulat & Nombor 1 -->
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50">
+                            <svg class="w-12 h-12 text-red-600 drop-shadow-sm" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" style="stroke-dasharray: 400; stroke-dashoffset: 400; animation: drawLine 0.8s ease-out forwards 0.5s;">
+                                <path d="M50,10 C80,5 95,25 90,50 C85,80 60,95 30,85 C5,75 5,45 20,20 C30,5 55,0 70,10" />
+                            </svg>
+                            <span class="absolute right-[-12px] top-[-5px] text-red-600 font-[900] text-2xl drop-shadow-[0_2px_2px_rgba(255,255,255,0.8)]" style="opacity: 0; animation: popNumber 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 1.2s;">1</span>
+                        </div>
+                    </div>
                 </div>
-              </div>
+                
+                <!-- Mock Menu Items -->
+                <div class="py-1 rounded-b-md">
+                    <div class="px-4 py-2 flex items-center gap-3 hover:bg-gray-100 cursor-default">
+                        <!-- Flag Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3 text-gray-500"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>
+                        <span>Report</span>
+                    </div>
+                    
+                    <div class="px-4 py-2 flex items-center gap-3 bg-gray-100 relative cursor-default">
+                        <!-- Globe Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3 text-gray-500 relative z-10"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+                        <span class="relative z-10">Open in Browser</span>
+                        
+                        <!-- Animasi Bujur & Nombor 2 -->
+                        <div class="absolute inset-0 pointer-events-none z-50">
+                            <svg class="absolute top-[1px] left-[10px] w-[150px] h-[34px] text-red-600 drop-shadow-sm" viewBox="0 0 200 50" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" style="stroke-dasharray: 600; stroke-dashoffset: 600; animation: drawLine 0.8s ease-out forwards 1.8s;">
+                                <path d="M100,5 C160,2 195,10 195,25 C195,45 150,48 90,45 C30,42 5,35 10,20 C15,5 60,2 110,8" />
+                            </svg>
+                            <span class="absolute left-[165px] top-[2px] text-red-600 font-[900] text-2xl drop-shadow-[0_2px_2px_rgba(255,255,255,0.8)]" style="opacity: 0; animation: popNumber 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 2.5s;">2</span>
+                        </div>
+                    </div>
+                    
+                    <div class="px-4 py-2 flex items-center gap-3 hover:bg-gray-100 cursor-default">
+                        <!-- Link Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3 text-gray-500"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                        <span>Copy link</span>
+                    </div>
+                </div>
             </div>
             
-            {/* Mock Menu Items */}
-            <div className="py-1 rounded-b-md">
-              <div className="px-4 py-2 flex items-center gap-3 hover:bg-gray-100 cursor-default">
-                <Flag className="w-3 h-3 text-gray-500" />
-                <span>Report</span>
-              </div>
-              
-              <div className="px-4 py-2 flex items-center gap-3 bg-gray-100 relative cursor-default">
-                <Globe className="w-3 h-3 text-gray-500 relative z-10" />
-                <span className="relative z-10">Open in Browser</span>
-                {/* Animasi Bujur & Nombor 2 */}
-                <div className="absolute inset-0 pointer-events-none z-50">
-                  <svg className="absolute top-[1px] left-[10px] w-[150px] h-[34px] text-red-600 drop-shadow-sm" viewBox="0 0 200 50" fill="none" stroke="currentColor" strokeWidth="6" strokeLinecap="round" style={{ strokeDasharray: '600', strokeDashoffset: '600', animation: 'drawLine 0.8s ease-out forwards 1.8s' }}>
-                    <path d="M100,5 C160,2 195,10 195,25 C195,45 150,48 90,45 C30,42 5,35 10,20 C15,5 60,2 110,8" />
-                  </svg>
-                  <span className="absolute left-[165px] top-[2px] text-red-600 font-[900] text-2xl drop-shadow-[0_2px_2px_rgba(255,255,255,0.8)]" style={{ opacity: 0, animation: 'popNumber 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 2.5s' }}>2</span>
-                </div>
-              </div>
-              
-              <div className="px-4 py-2 flex items-center gap-3 hover:bg-gray-100 cursor-default">
-                <LinkIcon className="w-3 h-3 text-gray-500" />
-                <span>Copy link</span>
-              </div>
-            </div>
-          </div>
-          
         </div>
-
-      </div>
     </div>
-  );
-}
+
+    <!-- Script Javascript untuk menjana Hujan Duit Emas rawak -->
+    <script>
+        const rainContainer = document.getElementById('rain-container');
+        const rainCoinsConfig = [
+            { left: '5%', duration: '4s', delay: '0.2s', size: 'w-6 h-6', text: 'text-[10px]' },
+            { left: '15%', duration: '5.5s', delay: '1.5s', size: 'w-4 h-4', text: 'text-[8px]' },
+            { left: '25%', duration: '3.8s', delay: '0.5s', size: 'w-8 h-8', text: 'text-xs' },
+            { left: '35%', duration: '6s', delay: '2.1s', size: 'w-5 h-5', text: 'text-[10px]' },
+            { left: '45%', duration: '4.5s', delay: '0.8s', size: 'w-6 h-6', text: 'text-[10px]' },
+            { left: '55%', duration: '5.2s', delay: '3.2s', size: 'w-7 h-7', text: 'text-[12px]' },
+            { left: '65%', duration: '4.2s', delay: '1.8s', size: 'w-4 h-4', text: 'text-[8px]' },
+            { left: '75%', duration: '6.5s', delay: '0.1s', size: 'w-8 h-8', text: 'text-xs' },
+            { left: '85%', duration: '3.5s', delay: '4.5s', size: 'w-5 h-5', text: 'text-[10px]' },
+            { left: '95%', duration: '5s', delay: '1.2s', size: 'w-6 h-6', text: 'text-[10px]' },
+            { left: '10%', duration: '7s', delay: '2.5s', size: 'w-7 h-7', text: 'text-[12px]' },
+            { left: '30%', duration: '4.8s', delay: '3.8s', size: 'w-4 h-4', text: 'text-[8px]' },
+            { left: '50%', duration: '5.9s', delay: '0.9s', size: 'w-8 h-8', text: 'text-xs' },
+            { left: '70%', duration: '4.1s', delay: '2.8s', size: 'w-5 h-5', text: 'text-[10px]' },
+            { left: '90%', duration: '6.2s', delay: '0.4s', size: 'w-6 h-6', text: 'text-[10px]' }
+        ];
+
+        rainCoinsConfig.forEach(coin => {
+            const coinHTML = `
+                <div class="absolute rounded-full bg-gradient-to-br from-yellow-200 via-yellow-500 to-yellow-700 border-2 border-yellow-300 shadow-[0_0_20px_rgba(234,179,8,0.5)] flex items-center justify-center ${coin.size} top-[-50px] opacity-0 ${coin.text}" 
+                     style="left: ${coin.left}; animation: coinRain ${coin.duration} linear infinite; animation-delay: ${coin.delay}; z-index: 0;">
+                    <div class="w-[75%] h-[75%] rounded-full border border-yellow-200/50 flex items-center justify-center bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-inner">
+                        <span class="text-yellow-100 font-bold opacity-80" style="font-size: inherit;">$</span>
+                    </div>
+                </div>
+            `;
+            rainContainer.insertAdjacentHTML('beforeend', coinHTML);
+        });
+    </script>
+</body>
+</html>
